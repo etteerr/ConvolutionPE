@@ -10,7 +10,7 @@
  *  stencil is the kernel, 3x3
  * @param data
  * @param stencil a 3x3 kernel
- * @return 
+ * @return time taken in seconds
  */
 double conv3(data_t ** data, convsize_t w, convsize_t h,  const data_t * stencil);
 
@@ -20,6 +20,6 @@ double conv3(data_t ** data, convsize_t w, convsize_t h,  const data_t * stencil
  *  stencil is the kernel, 5x5
  * @param data
  * @param stencil a 5x5 kernel
- * @return 
+ * @return time taken in seconds
  */
 double conv5(data_t ** data, convsize_t w, convsize_t h, const data_t * stencil);
