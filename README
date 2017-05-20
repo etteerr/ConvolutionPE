@@ -1,0 +1,40 @@
+This is my multi-project make file.
+
+There are 3 fixed directories:
+	-bin
+	-headers
+	-src
+These directories can be made with 'make directories'
+Going in to subdirectories required the make directories:
+$(SUBDIRS): directories
+	make command $@
+So the directories will always be there.
+
+These directories are shared between all projects.
+Note that src does not contain any standalone project
+
+project1 and project2 are example directories
+
+
+in ./makefile:
+	SUBDIRS denotes the project folders
+	and all these directories are moved into and make is executed.
+	
+	The variables: bindir, common_source, common_libs and headers are passed
+	to the submakefiles (eg. project1/makefile and project2/makefile)
+	
+	The commands all, debug, release and asm are avaiable.
+	test is written as simple echo for some variables.
+	
+	all: calls release
+	release: builds with specified release flags
+	debug: builds with specified debug flags
+	
+	
+In the SUBDIRS or the projects folders
+	The makefile is independed if the common sources are not usesd.
+	When building independendly, the binary will end in the same folder as the project.
+	(eg. project1/binary)
+	
+	The commands all, debug, release and asm are prewritten. Also the variables from the root
+	makefile are handled.

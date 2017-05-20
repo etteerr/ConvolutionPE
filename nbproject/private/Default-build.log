@@ -1,0 +1,12 @@
+mkdir -p /home/erwin/NetBeansProjects/ConvolutionPE/bin /home/erwin/NetBeansProjects/ConvolutionPE/headers /home/erwin/NetBeansProjects/ConvolutionPE/src
+/usr/bin/make -C avx release 	bindir=/home/erwin/NetBeansProjects/ConvolutionPE/bin common_source=/home/erwin/NetBeansProjects/ConvolutionPE/src/main.c headers=/home/erwin/NetBeansProjects/ConvolutionPE/headers common_libs= common_flags=
+make[1]: Entering directory '/home/erwin/NetBeansProjects/ConvolutionPE/avx'
+gcc -c   -g -O3 conv.c -I/home/erwin/NetBeansProjects/ConvolutionPE/headers -o conv.o  
+gcc -c   -g -O3 /home/erwin/NetBeansProjects/ConvolutionPE/src/main.c -I/home/erwin/NetBeansProjects/ConvolutionPE/headers -o /home/erwin/NetBeansProjects/ConvolutionPE/src/main.o  
+gcc conv.o /home/erwin/NetBeansProjects/ConvolutionPE/src/main.o -o /home/erwin/NetBeansProjects/ConvolutionPE/bin/avx  
+make[1]: Leaving directory '/home/erwin/NetBeansProjects/ConvolutionPE/avx'
+/usr/bin/make -C basic release 	bindir=/home/erwin/NetBeansProjects/ConvolutionPE/bin common_source=/home/erwin/NetBeansProjects/ConvolutionPE/src/main.c headers=/home/erwin/NetBeansProjects/ConvolutionPE/headers common_libs= common_flags=
+make[1]: Entering directory '/home/erwin/NetBeansProjects/ConvolutionPE/basic'
+gcc -c   -g -O3 conv.c -I/home/erwin/NetBeansProjects/ConvolutionPE/headers -o conv.o  
+gcc conv.o /home/erwin/NetBeansProjects/ConvolutionPE/src/main.o -o /home/erwin/NetBeansProjects/ConvolutionPE/bin/basic  
+make[1]: Leaving directory '/home/erwin/NetBeansProjects/ConvolutionPE/basic'
