@@ -1,3 +1,22 @@
+About the project:
+
+RIght now we have a basic convolution implementaton and a beginning in AVX.
+AVX 3x3 conv is done (Simple version, should be faster).
+
+The folder 'TemplateVersionProjectThing' is a convolution template which can be copied.
+This can be done with basic as well, might be a eaier start.
+./makefile contains the project directory specifications:
+	#Project targets
+	SUBDIRS = avx basic
+Add any new project dir here.
+
+Note: Binaries are not portable, recompilation is needed
+		Due to -march=native flag in ./makefile
+		THis is needed to enable AXV, and i want that variable in the basic project as well
+		To elimitate any unneccecairy variables.
+
+
+About the makefile:
 This is my multi-project make file.
 
 There are 3 fixed directories:
