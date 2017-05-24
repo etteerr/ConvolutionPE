@@ -3,6 +3,7 @@
 
 #include "conv.h"
 #include "tictoc.h"
+#include "iaca.h"
 
 #define get(X,Y) inData[(Y*width)+X]
 #define set(X,Y,V) outData[(Y*width)+X] = V
@@ -55,6 +56,7 @@ double conv3(float** data, unsigned long width, unsigned long height, const floa
         set(0, y, f1 + f2 + f3);
 
         //middle
+//        IACA_START;
         for (int x = 1; x < width - 1; x++) {
             //No prefetching here, we expect the CPU to predict this (Linear access)
             f1 = get(x - 1, y - 1) * kern[0];
@@ -71,7 +73,7 @@ double conv3(float** data, unsigned long width, unsigned long height, const floa
 
             set(x, y, f1 + f2 + f3);
         }
-
+//        IACA_END;
         //BOrder x==width-1
         f1 = get(width-1 - 1, y - 1) * kern[0];
         f2 = get(width-1 - 1, y) * kern[3];

@@ -12,6 +12,7 @@
       </df>
       <df name="headers">
         <in>conv.h</in>
+        <in>iaca.h</in>
         <in>tictoc.h</in>
       </df>
       <df name="optimized">
