@@ -74,5 +74,14 @@ int main(int nargs, char ** args) {
     __builtin___clear_cache(data, data+w*h);
     double time5 = conv5(&data, w, h, stencil5);
     printf("stencil 5x5: %f seconds, %e flops\n", time5, FLOPS(time5, w, h, 5));
+    
+    FILE *f;
+    fopen("report.csv", "a");
+    
+    if (ftell(f)==0) {
+        fprintf(f, "exe; width; height; time3; time5; flops3; flops5");
+    }
+    fprintf("%s; %u; %u; %e; %e; %e; %e", args[0], w, h, time3, time5, FLOPS(time3,w,h,5), FLOPS(time5,w,h,5));
+    fclose(f);
     return 0;
 };
