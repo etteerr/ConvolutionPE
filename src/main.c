@@ -52,9 +52,9 @@ int main(int nargs, char ** args) {
     makeDataAligned(&data, w, h);
     
     const data_t stencil3[] = { 
-                          0.0, 0.0, 0.0,
-                          0.0, 0.0, 0.0,
-                          0.0, 0.0, 0.0
+                          1.0, 1.0, 1.0,
+                          1.0, 1.0/9.0, 1.0,
+                          1.0, 1.0, 1.0
     };
     __builtin___clear_cache(data, data+w*h);
     double time3 = conv3(&data, w, h, stencil3);
@@ -64,11 +64,11 @@ int main(int nargs, char ** args) {
     makeDataAligned(&data, w, h);
     
     const data_t stencil5[] = { 
-                          0.0, 0.0, 0.0, 0.0, 0.0,
-                          0.0, 0.0, 0.0, 0.0, 0.0,
-                          0.0, 0.0, 0.0, 0.0, 0.0,
-                          0.0, 0.0, 0.0, 0.0, 0.0,
-                          0.0, 0.0, 0.0, 0.0, 0.0
+                          0.0, 0.0, 1.0, 0.0, 0.0,
+                          0.0, 1.0, 2.0, 1.0, 0.0,
+                          1.0, 2.0, 3.0, 2.0, 1.0,
+                          0.0, 1.0, 2.0, 1.0, 0.0,
+                          0.0, 0.0, 1.0, 0.0, 0.0
     };
     
     __builtin___clear_cache(data, data+w*h);

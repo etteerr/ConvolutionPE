@@ -7,8 +7,6 @@
 #include "conv.h"
 #include "tictoc.h"
 
-#define set 0xFFFFFFFF
-#define uset 0x0
 
 /**
  * Calculates a convolution by AVX256:
@@ -22,38 +20,71 @@
  */
 double conv3(float** data, unsigned long width, unsigned long height, const float* filter) {
 
-    data_t * outData = 0, *inData = *data;
+    data_t * outData = 0, *inData;
+    
+    inData = *data;
 
 
     outData = aligned_alloc(16, width * height * sizeof (data_t));
     
-    __m256 ktop, kmid, kbot; //Kernel (Fits 8 float)
-    __m256 dtop, dmid, dbot; //Data
-    __m256 vacc1, vacc2;
-    __m256i mask;
+    register __m256 dtop, dmid, dbot, dtarget1, dtarget2, dtarget3; //Vector data storage
+    register __m256 k1,k2,k3; //1-8 kernels (missing 9)
+    register __m256 r1,r2,r3; //free to use
+    register data_t fk1, fk2, fk3; //Rest kernel
+    register data_t f1,f2,f3; //free to use
+    register __m256i smask = (__m256i){0,-1,-1,-1,-1,-1,-1,0};
+    
+    //start timer
     tic();
     
     //Init kernel
-    ktop = (__m256) { filter[0], filter[1], filter[2], filter[0], filter[1], filter[2], 0.0, 0.0} ;
-    kmid = (__m256) { filter[3], filter[4], filter[5], filter[3], filter[4], filter[5], 0.0, 0.0} ;
-    kbot = (__m256) { filter[6], filter[7], filter[8], filter[6], filter[7], filter[8], 0.0, 0.0} ;
-    mask = (__m256i) {set,set,set,set,set,set,uset,uset};
+    k1 = k2 = k3 = _mm256_loadu_ps(filter); //load unalligned
+    fk1 = fk2 = fk3 = filter[8]; //rest
     
     //Center cases
     for (int y = 1; y < height-1; y++) {
-        for (int x = 1; x < width-1; x++) {
-            dtop = _mm256_maskload_ps(inData[((y-1)*width)+x-1], mask);
-            vacc1 = _mm256_fmadd_ps(dtop, ktop, vacc1);
-            dmid = _mm256_maskload_ps(inData[((y+0)*width)+x-1], mask);
-            vacc1 = _mm256_fmadd_ps(dmid, kmid, vacc1);
-            dbot = _mm256_maskload_ps(inData[((y+1)*width)+x-1], mask);
-            vacc1 = _mm256_fmadd_ps(dbot, kbot, vacc1);
-            vacc2 = vacc1;
-            //c = {A1+A2, A3+A4, B1+B2, B3+B4, A5+A6, A7+A8, B5+B6, B7+B8}
-            //     _____         _____         _____         _____
-            //_mm256_hadd_ps(acc,acc); //Does not surve much purpose
-            outData[(y*width)+x] = vacc1[0] + vacc1[1] + vacc1[3];
-            outData[(y*width)+x+3] = vacc2[4] + vacc2[5] + vacc2[6];
+        for (int x = 0; x < width-6; x+=6) {
+            register int rcount = 1;
+            //Load data
+            dtop = _mm256_loadu_ps(&inData[((y-1)*width)+x]); //Support row
+            dmid = _mm256_loadu_ps(&inData[( y   *width)+x]); //target row
+            dbot = _mm256_loadu_ps(&inData[((y+1)*width)+x]); //Support row
+            
+            for(int i=0; i<5; i++){
+                //Extract 3 kernel targets
+                dtarget1 = (__m256) {dtop[i+0], dtop[i+1], dtop[i+2], dmid[i+0], dmid[i+1], dmid[i+2], dbot[i+0], dbot[i+1]}; //Is correctly optimized
+                f1 = dbot[i+2];
+                dtarget2 = (__m256) {dtop[i+1], dtop[i+2], dtop[i+3], dmid[i+1], dmid[i+2], dmid[i+3], dbot[i+1], dbot[i+2]}; //Is correctly optimized
+                f2 = dbot[i+3];
+                dtarget3 = (__m256) {dtop[i+2], dtop[i+3], dtop[i+4], dmid[i+2], dmid[i+3], dmid[i+4], dbot[i+2], dbot[i+3]}; //Is correctly optimized
+                f3 = dbot[i+4];
+                
+                //Vector products
+                dtarget1 *= k1;
+                dtarget2 *= k2;
+                dtarget3 *= k3;
+                
+                //scalar products (Seperate port from vector products)
+                f1 *= fk1;
+                f2 *= fk2;
+                f3 *= fk3;
+                
+                //Sum A+B, A+B, B+C, B+C
+                dtarget1 = _mm256_hadd_ps(dtarget1, dtarget1);
+                f1 += dtarget1[0] + dtarget1[2];
+                dtarget2 = _mm256_hadd_ps(dtarget2, dtarget2);
+                f2 += dtarget2[0] + dtarget2[2];
+                dtarget3 = _mm256_hadd_ps(dtarget3, dtarget3);
+                f3 += dtarget3[0] + dtarget3[2];
+                
+                //store results in register 'r1'
+                r1[rcount++] = f1;
+                r1[rcount++] = f2;
+                r1[rcount++] = f3;
+            }
+            
+            //store final results
+            _mm256_maskstore_ps(&inData[(y*width)+x], smask, r1);
         }
     }
     double time = toc();
