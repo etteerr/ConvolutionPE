@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <omp.h>
 #include <stdio.h>
+#include <string.h>
 
 
 #include "conv.h"
@@ -35,53 +36,68 @@ void makeDataAligned(data_t ** pdata, convsize_t width, convsize_t height) {
 
 int main(int nargs, char ** args) {
     
-    if (nargs != 3 && nargs != 1) {
+    if (nargs != 3 && nargs != 1 && nargs != 4) {
         printf("Invalid usage, use ./bin [width] [height]");
     }
     
-    convsize_t w,h;
+    convsize_t w,h, times;
     h=w=1000;
-    
+    times = 1;
     if (nargs == 3) {
         w = atoll(args[1]);
         h = atoll(args[2]);
     }
+    if (nargs == 4) {
+        w = atoll(args[1]);
+        h = atoll(args[2]);
+        times = atoll(args[3]);
+    }
     
     data_t *data;
-    
-    makeDataAligned(&data, w, h);
-    
-    const data_t stencil3[] = { 
-                          1.0, 1.0, 1.0,
-                          1.0, 1.0/9.0, 1.0,
-                          1.0, 1.0, 1.0
-    };
-    __builtin___clear_cache(data, data+w*h);
-    double time3 = conv3(&data, w, h, stencil3);
-    printf("stencil 3x3: %f seconds, %e flops\n", time3, FLOPS(time3, w, h, 3));
-    
-    free(data);
-    makeDataAligned(&data, w, h);
-    
-    const data_t stencil5[] = { 
-                          0.0, 0.0, 1.0, 0.0, 0.0,
-                          0.0, 1.0, 2.0, 1.0, 0.0,
-                          1.0, 2.0, 3.0, 2.0, 1.0,
-                          0.0, 1.0, 2.0, 1.0, 0.0,
-                          0.0, 0.0, 1.0, 0.0, 0.0
-    };
-    
-    __builtin___clear_cache(data, data+w*h);
-    double time5 = conv5(&data, w, h, stencil5);
-    printf("stencil 5x5: %f seconds, %e flops\n", time5, FLOPS(time5, w, h, 5));
-    
     FILE *f;
-    fopen("report.csv", "a");
+    f = fopen("report.csv", "a");
     
-    if (ftell(f)==0) {
-        fprintf(f, "exe; width; height; time3; time5; flops3; flops5");
+    if (f==0) {
+        printf("Failed to open report.csv\n");
+        exit(1);
     }
-    fprintf("%s; %u; %u; %e; %e; %e; %e", args[0], w, h, time3, time5, FLOPS(time3,w,h,5), FLOPS(time5,w,h,5));
+    for(int i = 0; i<times; i++) {
+        makeDataAligned(&data, w, h);
+
+        const data_t stencil3[] = { 
+                              1.0, 1.0, 1.0,
+                              1.0, 1.0/9.0, 1.0,
+                              1.0, 1.0, 1.0
+        };
+        __builtin___clear_cache(data, data+w*h);
+        double time3 = conv3(&data, w, h, stencil3);
+        printf("stencil 3x3: %f seconds, %e flops\n", time3, FLOPS(time3, w, h, 3));
+
+        free(data);
+        makeDataAligned(&data, w, h);
+
+        const data_t stencil5[] = { 
+                              0.0, 0.0, 1.0, 0.0, 0.0,
+                              0.0, 1.0, 2.0, 1.0, 0.0,
+                              1.0, 2.0, 3.0, 2.0, 1.0,
+                              0.0, 1.0, 2.0, 1.0, 0.0,
+                              0.0, 0.0, 1.0, 0.0, 0.0
+        };
+
+        __builtin___clear_cache(data, data+w*h);
+        double time5 = conv5(&data, w, h, stencil5);
+        printf("stencil 5x5: %f seconds, %e flops\n", time5, FLOPS(time5, w, h, 5));
+        
+        free(data);
+       
+
+        if (ftell(f)==0) {
+            fprintf(f, "exe; width; height; time3; time5; flops3; flops5");
+        }
+        
+        fprintf(f,"%s; %zu; %zu; %e; %e; %e; %e", args[0], w, h, time3, time5, FLOPS(time3,w,h,5), FLOPS(time5,w,h,5));
+        
+    }
     fclose(f);
     return 0;
 };
