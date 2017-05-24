@@ -8,8 +8,8 @@
       <df name="basic">
         <in>conv.c</in>
       </df>
-      <df name="headers">
-        <in>tictoc.h</in>
+      <df name="optimized">
+        <in>conv.c</in>
       </df>
       <df name="src">
         <in>main.c</in>
@@ -37,7 +37,7 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-fopenmp -g"/>
+        <element flagsID="0" commonFlags="-fopenmp -march=native -mavx -g"/>
       </flagsDictionary>
       <codeAssistance>
         <resolveSymbolicLinks>true</resolveSymbolicLinks>
@@ -75,13 +75,17 @@
           </incDir>
         </cTool>
       </folder>
-      <item path="headers/tictoc.h" ex="false" tool="3" flavor2="0">
+      <item path="optimized/conv.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
       </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="0">
         <cTool flags="0">
         </cTool>
       </item>
       <item path="src/tictoc.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
       </item>
     </conf>
     <conf name="Release" type="0">

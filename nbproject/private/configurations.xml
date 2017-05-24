@@ -14,6 +14,9 @@
         <in>conv.h</in>
         <in>tictoc.h</in>
       </df>
+      <df name="optimized">
+        <in>conv.c</in>
+      </df>
       <df name="src">
         <in>main.c</in>
         <in>tictoc.c</in>

@@ -1,5 +1,5 @@
 #Project targets
-SUBDIRS = avx basic
+SUBDIRS = avx basic optimized
 
 #Common settings
 bindir = ${CURDIR}/bin
