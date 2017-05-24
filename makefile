@@ -1,5 +1,5 @@
 #Project targets
-SUBDIRS = avx basic optimized
+SUBDIRS = avx basic optimized cuda
 
 #Common settings
 bindir = ${CURDIR}/bin
@@ -7,7 +7,7 @@ srcdir = ${CURDIR}/src
 common_src = $(wildcard $(srcdir)/*.c)
 headers = ${CURDIR}/headers
 common_libs = 
-common_flags = -fopenmp -march=native -mavx -Wa,-q
+common_flags = -fopenmp -march=native -mavx
 
 
 extra_cmd = 

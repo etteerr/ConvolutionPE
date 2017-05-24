@@ -21,7 +21,6 @@ double conv3(float** data, unsigned long width, unsigned long height, const floa
     for (int i = 0; i < 9; i++)
         kern[i] = filter[i];
     register float kernl = filter[9];
-    register float acc1, acc2, acc3;
     register float f1, f2, f3, f4, f5, f6;
 
     //Edge case y==0
@@ -31,7 +30,7 @@ double conv3(float** data, unsigned long width, unsigned long height, const floa
         f2 = get(x - 1, 1) * kern[6];
 
         f3 = get(x, 0) * kern[4];
-        f1 += get(x,1) * kern[7];
+        f1 += get(x, 1) * kern[7];
 
         f2 += get(x + 1, 0) * kern[3];
         f3 += get(x + 1, 1) * kernl;
@@ -56,7 +55,7 @@ double conv3(float** data, unsigned long width, unsigned long height, const floa
         set(0, y, f1 + f2 + f3);
 
         //middle
-//        IACA_START;
+        //        IACA_START;
         for (int x = 1; x < width - 1; x++) {
             //No prefetching here, we expect the CPU to predict this (Linear access)
             f1 = get(x - 1, y - 1) * kern[0];
@@ -73,23 +72,23 @@ double conv3(float** data, unsigned long width, unsigned long height, const floa
 
             set(x, y, f1 + f2 + f3);
         }
-//        IACA_END;
+        //        IACA_END;
         //BOrder x==width-1
-        f1 = get(width-1 - 1, y - 1) * kern[0];
-        f2 = get(width-1 - 1, y) * kern[3];
-        f3 = get(width-1 - 1, y + 1) * kern[6];
+        f1 = get(width - 1 - 1, y - 1) * kern[0];
+        f2 = get(width - 1 - 1, y) * kern[3];
+        f3 = get(width - 1 - 1, y + 1) * kern[6];
 
-        f1 += get(width-1, y - 1) * kern[1];
-        f2 += get(width-1, y) * kern[4];
-        f3 += get(width-1, y + 1) * kern[7];
+        f1 += get(width - 1, y - 1) * kern[1];
+        f2 += get(width - 1, y) * kern[4];
+        f3 += get(width - 1, y + 1) * kern[7];
 
-        set(width-1, y, f1 + f2 + f3);
+        set(width - 1, y, f1 + f2 + f3);
     }
     //Border case y==height-1
     for (int x = 1; x < width - 1; x++) {
         //No prefetching here, we expect the CPU to predict this (Linear access)
         f4 = get(x - 1, height - 2) * kern[0];
-        f5 = get(x - 1, height-1) * kern[3];
+        f5 = get(x - 1, height - 1) * kern[3];
 
         f6 = get(x, height - 2) * kern[1];
         f4 += get(x, height - 1) * kern[4];
@@ -97,7 +96,7 @@ double conv3(float** data, unsigned long width, unsigned long height, const floa
         f5 += get(x + 1, height - 2) * kern[2];
         f6 += get(x + 1, height - 1) * kern[5];
 
-        set(x, height-1, f4 + f5 + f6);
+        set(x, height - 1, f4 + f5 + f6);
     }
 
     double time = toc();

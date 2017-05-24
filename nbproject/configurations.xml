@@ -8,8 +8,8 @@
       <df name="basic">
         <in>conv.c</in>
       </df>
-      <df name="headers">
-        <in>iaca.h</in>
+      <df name="cuda">
+        <in>conv.cu</in>
       </df>
       <df name="optimized">
         <in>conv.c</in>
@@ -41,6 +41,7 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-fopenmp -march=native -mavx -g"/>
+        <element flagsID="1" commonFlags="-xc++ -fopenmp -march=native -m64"/>
       </flagsDictionary>
       <codeAssistance>
         <resolveSymbolicLinks>true</resolveSymbolicLinks>
@@ -57,6 +58,25 @@
               <pElem>headers</pElem>
             </incDir>
           </cTool>
+          <ccTool>
+            <incDir>
+              <pElem>headers</pElem>
+              <pElem>../../.cache/netbeans/8.2/remote-files/192.168.0.10_22_etteerr/usr/targets/x86_64-linux/include</pElem>
+            </incDir>
+            <incFile>
+              <pElem>../../.cache/netbeans/8.2/remote-files/192.168.0.10_22_etteerr/usr/targets/x86_64-linux/include/cuda_runtime.h</pElem>
+            </incFile>
+            <preprocessorList>
+              <Elem>CUDA_DOUBLE_MATH_FUNCTIONS</Elem>
+              <Elem>__CUDACC_VER_BUILD__=61</Elem>
+              <Elem>__CUDACC_VER_MAJOR__=8</Elem>
+              <Elem>__CUDACC_VER_MINOR__=0</Elem>
+              <Elem>__CUDACC_VER__=80061</Elem>
+              <Elem>__CUDACC__</Elem>
+              <Elem>__CUDA_ARCH__=520</Elem>
+              <Elem>__NVCC__</Elem>
+            </preprocessorList>
+          </ccTool>
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
@@ -71,6 +91,10 @@
         <cTool flags="0">
         </cTool>
       </item>
+      <item path="cuda/conv.cu" ex="false" tool="1" flavor2="0">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
       <folder path="0/src">
         <cTool>
           <incDir>
@@ -78,8 +102,6 @@
           </incDir>
         </cTool>
       </folder>
-      <item path="headers/iaca.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="optimized/conv.c" ex="false" tool="0" flavor2="0">
         <cTool flags="0">
         </cTool>
@@ -88,7 +110,7 @@
         <cTool flags="0">
         </cTool>
       </item>
-      <item path="src/tictoc.c" ex="false" tool="0" flavor2="0">
+      <item path="src/tictoc.c" ex="false" tool="0" flavor2="10">
         <cTool flags="0">
         </cTool>
       </item>
@@ -100,7 +122,8 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-fopenmp -g -O3"/>
+        <element flagsID="0" commonFlags="-fopenmp -march=native -mavx -g -O3"/>
+        <element flagsID="1" commonFlags="-xc++ -fopenmp -march=native -m64"/>
       </flagsDictionary>
       <codeAssistance>
         <resolveSymbolicLinks>true</resolveSymbolicLinks>
@@ -117,6 +140,22 @@
               <pElem>headers</pElem>
             </incDir>
           </cTool>
+          <ccTool>
+            <incDir>
+              <pElem>headers</pElem>
+              <pElem>/usr/targets/x86_64-linux/include</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>CUDA_DOUBLE_MATH_FUNCTIONS</Elem>
+              <Elem>__CUDACC_VER_BUILD__=61</Elem>
+              <Elem>__CUDACC_VER_MAJOR__=8</Elem>
+              <Elem>__CUDACC_VER_MINOR__=0</Elem>
+              <Elem>__CUDACC_VER__=80061</Elem>
+              <Elem>__CUDACC__</Elem>
+              <Elem>__CUDA_ARCH__=520</Elem>
+              <Elem>__NVCC__</Elem>
+            </preprocessorList>
+          </ccTool>
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
@@ -131,20 +170,27 @@
         <cTool flags="0">
         </cTool>
       </item>
-      <item path="headers/iaca.h" ex="false" tool="3" flavor2="0">
+      <item path="cuda/conv.cu" ex="false" tool="1" flavor2="4">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <folder path="0/src">
+        <cTool>
+          <incDir>
+            <pElem>optimized</pElem>
+          </incDir>
+        </cTool>
+      </folder>
+      <item path="optimized/conv.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
       </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="10">
         <cTool flags="0">
-          <incDir>
-            <pElem>basic</pElem>
-          </incDir>
         </cTool>
       </item>
       <item path="src/tictoc.c" ex="false" tool="0" flavor2="0">
         <cTool flags="0">
-          <incDir>
-            <pElem>avx</pElem>
-          </incDir>
         </cTool>
       </item>
     </conf>
