@@ -14,7 +14,7 @@ void makeDataAligned(data_t ** pdata, convsize_t width, convsize_t height) {
     
     data_t * data = 0;
     
-    data = aligned_alloc(16, size*sizeof(data_t));
+    data = aligned_alloc(32, size*sizeof(data_t));
     
     if (!data)
         exit(1);

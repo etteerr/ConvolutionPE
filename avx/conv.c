@@ -7,7 +7,6 @@
 #include "conv.h"
 #include "tictoc.h"
 
-
 /**
  * Calculates a convolution by AVX256:
  *  FMA with data * kernel + acc
@@ -21,71 +20,115 @@
 double conv3(float** data, unsigned long width, unsigned long height, const float* filter) {
 
     data_t * outData = 0, *inData;
-    
+
     inData = *data;
 
 
-    outData = aligned_alloc(16, width * height * sizeof (data_t));
-    
-    register __m256 dtop, dmid, dbot, dtarget1, dtarget2, dtarget3; //Vector data storage
-    register __m256 k1,k2,k3; //1-8 kernels (missing 9)
-    register __m256 r1,r2,r3; //free to use
+    outData = aligned_alloc(32, width * height * sizeof (data_t));
+
+    register __m256 dtop1, dmid1, dbot1, dtop2, dmid2, dbot2, dtopp, dmidp, dbotp, dtarget1, dtarget2; //Vector data storage
+    register __m256 k1, k2, k3; //1-8 kernels (missing 9)
+    register __m256 r1;
+    register __m256i maskk;
     register data_t fk1, fk2, fk3; //Rest kernel
-    register data_t f1,f2,f3; //free to use
-    register __m256i smask = (__m256i){0,-1,-1,-1,-1,-1,-1,0};
-    
+    register data_t f1, f2, f3; //free to use
+
     //start timer
     tic();
-    
+
     //Init kernel
     k1 = k2 = k3 = _mm256_loadu_ps(filter); //load unalligned
     fk1 = fk2 = fk3 = filter[8]; //rest
-    
+
+    //Calculate rest width
+    int wrest = width - (width % 8);
+    int x;
     //Center cases
-    for (int y = 1; y < height-1; y++) {
-        for (int x = 0; x < width-6; x+=6) {
+    for (int y = 0; y < height; y++) {
+        //bootstrap
+        dtop1 = dmid1 = dbot1 = _mm256_setzero_ps();
+        if (y == 0)
+            dtop2 = dtop1;
+        else
+            dtop2 = _mm256_load_ps(&inData[((y - 1) * width)]); //Support row
+
+        dmid2 = _mm256_load_ps(&inData[(y * width)]); //target row
+
+        if ((y+1)  < height)
+            dbot2 = _mm256_load_ps(&inData[((y + 1) * width)]); //Support row
+        else
+            dbot2 = dtop1;
+
+        for (x = 0; x < width - 8; x += 8) {
             register int rcount = 1;
-            //Load data
-            dtop = _mm256_loadu_ps(&inData[((y-1)*width)+x]); //Support row
-            dmid = _mm256_loadu_ps(&inData[( y   *width)+x]); //target row
-            dbot = _mm256_loadu_ps(&inData[((y+1)*width)+x]); //Support row
-            
-            for(int i=0; i<5; i++){
+            //Load data (shift loaded data)
+            dtop1 = dtop2;
+            dmid1 = dmid2;
+            dbot1 = dbot2;
+            if (x + 16 < width) {
+                if (y != 0) dtop2 = _mm256_load_ps(&inData[((y - 1) * width) + x + 8]); //Support row next
+                dmid2 = _mm256_load_ps(&inData[(y * width) + x + 8]); //target row next
+                if ((y+1) < height) dbot2 = _mm256_load_ps(&inData[((y + 1) * width) + x + 8]); //Support row next
+                else dbot2 = _mm256_setzero_ps();
+            } else {
+                maskk = (__m256i){(x + 8 < width) - 1, (x + 8 < width) - 1,
+                    (x + 8 < width) - 1, (x + 8 < width) - 1, (x + 8 < width) - 1,
+                    (x + 8 < width) - 1, (x + 8 < width) - 1, (x + 8 < width) - 1};
+                dtop2 = _mm256_maskload_ps(&inData[((y - 1) * width) + x + 8], maskk); //Support row next
+                dmid2 = _mm256_maskload_ps(&inData[(y * width) + x + 8], maskk); //target row next
+                if ((y+1)  < height) dbot2 = _mm256_maskload_ps(&inData[((y + 1) * width) + x + 8], maskk); //Support row next
+                else dbot2 = _mm256_setzero_ps();
+            }
+            //First element is special
+            if ((y+1)  < height) dtarget1 = (__m256){inData[((y - 1) * width) + x - 1], dtop1[0], dtop1[1], inData[((y) * width) + x - 1], dmid1[0], dmid1[1], inData[((y + 1) * width) + x - 1], dbot1[0]};
+            else dtarget1 = (__m256){inData[((y - 1) * width) + x - 1], dtop1[0], dtop1[1], inData[((y) * width) + x - 1], dmid1[0], dmid1[1], 0.0, dbot1[0]};
+            f1 = dbot1[1];
+
+            dtarget1 *= k1;
+            f1 *= fk1;
+            dtarget1 = _mm256_hadd_ps(dtarget1, dtarget1);
+            f1 += dtarget1[0] + dtarget1[2];
+            r1[0] = f1;
+            //second to one before last is generic
+            for (int i = 0; i < 6; i += 2) {
                 //Extract 3 kernel targets
-                dtarget1 = (__m256) {dtop[i+0], dtop[i+1], dtop[i+2], dmid[i+0], dmid[i+1], dmid[i+2], dbot[i+0], dbot[i+1]}; //Is correctly optimized
-                f1 = dbot[i+2];
-                dtarget2 = (__m256) {dtop[i+1], dtop[i+2], dtop[i+3], dmid[i+1], dmid[i+2], dmid[i+3], dbot[i+1], dbot[i+2]}; //Is correctly optimized
-                f2 = dbot[i+3];
-                dtarget3 = (__m256) {dtop[i+2], dtop[i+3], dtop[i+4], dmid[i+2], dmid[i+3], dmid[i+4], dbot[i+2], dbot[i+3]}; //Is correctly optimized
-                f3 = dbot[i+4];
-                
+                dtarget1 = (__m256){dtop1[i + 0], dtop1[i + 1], dtop1[i + 2], dmid1[i + 0], dmid1[i + 1], dmid1[i + 2], dbot1[i + 0], dbot1[i + 1]}; //Is correctly optimized
+                f1 = dbot1[i + 2];
+                dtarget2 = (__m256){dtop1[i + 1], dtop1[i + 2], dtop1[i + 3], dmid1[i + 1], dmid1[i + 2], dmid1[i + 3], dbot1[i + 1], dbot1[i + 2]}; //Is correctly optimized
+                f2 = dbot1[i + 3];
                 //Vector products
                 dtarget1 *= k1;
                 dtarget2 *= k2;
-                dtarget3 *= k3;
-                
+
                 //scalar products (Seperate port from vector products)
                 f1 *= fk1;
                 f2 *= fk2;
-                f3 *= fk3;
-                
+
                 //Sum A+B, A+B, B+C, B+C
                 dtarget1 = _mm256_hadd_ps(dtarget1, dtarget1);
                 f1 += dtarget1[0] + dtarget1[2];
                 dtarget2 = _mm256_hadd_ps(dtarget2, dtarget2);
                 f2 += dtarget2[0] + dtarget2[2];
-                dtarget3 = _mm256_hadd_ps(dtarget3, dtarget3);
-                f3 += dtarget3[0] + dtarget3[2];
-                
+
                 //store results in register 'r1'
                 r1[rcount++] = f1;
                 r1[rcount++] = f2;
-                r1[rcount++] = f3;
             }
-            
+            //Last element is special
+            dtarget1 = (__m256){dtop1[7], dtop1[8], dtop2[0], dmid1[7], dmid1[8], dmid2[0], dbot1[7], dbot1[8]};
+            f1 = dbot2[0];
+            dtarget1 *= k1;
+            f1 *= fk1;
+            dtarget1 = _mm256_hadd_ps(dtarget1, dtarget1);
+            f1 += dtarget1[0] + dtarget1[2];
+            r1[8] = f1;
             //store final results
-            _mm256_maskstore_ps(&inData[(y*width)+x], smask, r1);
+            if (x + 16 < width)
+                _mm256_store_ps(&outData[(y * width) + x], r1);
+            else
+                _mm256_maskstore_ps(&outData[(y * width) + x], maskk, r1);
         }
+
     }
     double time = toc();
     free(inData);
@@ -98,7 +141,7 @@ double conv5(float** data, unsigned long width, unsigned long height, const floa
 
     data_t * outData = 0, *inData = *data;
 
-    outData = aligned_alloc(16, width * height * sizeof (data_t));
+    outData = aligned_alloc(32, width * height * sizeof (data_t));
 
     tic();
 
