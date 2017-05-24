@@ -243,7 +243,7 @@ double conv5(float** data, unsigned long width, unsigned long height, const floa
         set(1, y, f1 + f2 + f3 + f4 + f5);
 
         //middle
-        //        IACA_START;
+                IACA_START;
         for (int x = 1; x < width - 1; x++) {
             //No prefetching here, we expect the CPU to predict this (Linear access)
             f1 = get(x - 2, y - 2) * kern[5 * 0 + 0];
@@ -279,7 +279,7 @@ double conv5(float** data, unsigned long width, unsigned long height, const floa
 
             set(x, y, f1 + f2 + f3 + f4 + f5);
         }
-        //        IACA_END;
+                IACA_END;
 
         //Border x==width-2
         f1 = get(width - 2 - 2, y - 2) * kern[5 * 0 + 0];
