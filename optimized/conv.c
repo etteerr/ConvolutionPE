@@ -25,8 +25,10 @@ double conv3(float** data, unsigned long width, unsigned long height, const floa
     register float f1,f2,f3,f4,f5,f6;
 
     for (int y = 1; y < height-1; y++) {
-        __builtin_prefetch(&get(y+1,0));
+        __builtin_prefetch(&get(y+1,0)); //prefetch, from 3 to 3.5 GFLOPS
         __builtin_prefetch(&get(y+2,0));
+        __builtin_prefetch(&get(y+3,0));
+        __builtin_prefetch(&get(y+4,0));
         for (int x = 1; x < width-1; x++) {
             f1 = get(x-1,y-1) * kern[0];
             f2 = get(x-1,y  ) * kern[3];
