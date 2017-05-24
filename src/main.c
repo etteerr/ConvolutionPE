@@ -92,10 +92,10 @@ int main(int nargs, char ** args) {
        
 
         if (ftell(f)==0) {
-            fprintf(f, "exe; width; height; time3; time5; flops3; flops5");
+            fprintf(f, "exe; width; height; time3; time5; flops3; flops5\n");
         }
         
-        fprintf(f,"%s; %zu; %zu; %e; %e; %e; %e", args[0], w, h, time3, time5, FLOPS(time3,w,h,5), FLOPS(time5,w,h,5));
+        fprintf(f,"%s; %zu; %zu; %e; %e; %e; %e\n", args[0], w, h, time3, time5, FLOPS(time3,w,h,5), FLOPS(time5,w,h,5));
         
     }
     fclose(f);
