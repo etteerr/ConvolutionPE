@@ -24,8 +24,8 @@ source += ${common_source}
 # Adds libs from common
 LIBS += ${common_libs}
 # Add flags from common
-#FLAGS += ${common_flags}
-FLAGS = -std=c11  -fopenmp -march=native -mno-sse4.2 # -mavx
+FLAGS += ${common_flags}
+#FLAGS = -std=c11  -fopenmp -march=native -mno-sse4.2 # -mavx
 
 .PHONY: all
 all: release

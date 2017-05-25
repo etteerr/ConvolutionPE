@@ -7,7 +7,7 @@ srcdir = ${CURDIR}/src
 common_src = $(wildcard $(srcdir)/*.c)
 headers = ${CURDIR}/headers
 common_libs = 
-common_flags = -fopenmp -march=native -mavx
+common_flags = -fopenmp -march=native -mavx -std=c11
 
 
 extra_cmd = 
