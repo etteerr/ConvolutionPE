@@ -13,7 +13,7 @@ linker = nvcc
 FLAGS = 
 #libs, idem
 LIBS = 
-
+NVFLAG = -arch=sm_52
 #Binary target file
 target := ${bindir:%=%/}cuda
 source := conv.cu
@@ -45,10 +45,10 @@ debug: $(target)
 	$(builder) -c $(FLAGS) $< ${headers:%=-I%} -o $@ $(LIBS)
 	
 %.cu.o : %.cu
-	nvcc -G -c -arch=sm_52 -Xcompiler "$(FLAGS:-std%=)" $< ${headers:%=-I%} -o $@ $(LIBS)
+	nvcc -G -c $(NVFLAG) -Xcompiler "$(FLAGS:-std%=)" $< ${headers:%=-I%} -o $@ $(LIBS)
 	
 $(target) : $(source:%=%.o)
-	$(linker) -arch=sm_52 -Xcompiler "$(FLAGS:-std%=)" $(source:%=%.o) -o $@ $(LIBS)
+	$(linker) $(NVFLAG) -Xcompiler "$(FLAGS:-std%=)" $(source:%=%.o) -o $@ $(LIBS)
 	
 clean:
 	rm -f *.o
