@@ -1,5 +1,5 @@
 #Project targets
-SUBDIRS = avx basic optimized
+SUBDIRS = avx basic optimized cuda
 
 #Common settings
 bindir = ${CURDIR}/bin

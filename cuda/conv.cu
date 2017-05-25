@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <sys/time.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -67,24 +68,26 @@ double conv3(float** data, unsigned long width, unsigned long height, const floa
     
     //Calcualte block
     dim3 block;
-    block.x = 8;
+    block.x = 16;
     block.y = 8;
-    block.z = 0;
+    block.z = 1;
     dim3 blocks;
-    blocks.x = width/8 + (int)((width%8)>0);
-    blocks.y = height/8 + (int)((height%8)>0);
-    blocks.z = 0;
-    
+    blocks.x = width/block.x + (int)((width%block.x)>0);
+    blocks.y = height/block.y + (int)((height%block.y)>0);
+    blocks.z = 1;
     //do
     cudaMemcpy(cudaFilter, filter, sizeof(float)*9,cudaMemcpyHostToDevice);
     cudaMemcpy(cudaIn, inData, sizeof(float)*width*height, cudaMemcpyHostToDevice);
-    kernel_conv3<<<block, blocks>>>(cudaIn, cudaOut, width, height, cudaFilter);
+    kernel_conv3<<<blocks, block>>>(cudaIn, cudaOut, width, height, cudaFilter);
     cudaMemcpy(inData, cudaOut, sizeof(float)*width*height, cudaMemcpyDeviceToHost);
     cudaFree(cudaIn);
     cudaFree(cudaOut);
     cudaFree(cudaFilter);
     double time = toc();
-
+    
+    cudaError_t cudaError = cudaGetLastError();
+    printf("CudaError:\n%s\n", cudaGetErrorString(cudaError));
+    
     return time;
 }
 
@@ -124,21 +127,25 @@ double conv5(float** data, unsigned long width, unsigned long height, const floa
     
     //Calcualte block
     dim3 block;
-    block.x = 8;
+    block.x = 16;
     block.y = 8;
+    block.z = 1;
     dim3 blocks;
-    blocks.x = width/8 + (width%8)>0;
-    blocks.y = height/8 + (height%8)>0;
-    
+    blocks.x = width/block.x + (int)((width%block.x)>0);
+    blocks.y = height/block.y + (int)((height%block.y)>0);
+    block.z = 1;
     //do
     cudaMemcpy(cudaFilter, filter, sizeof(float)*25,cudaMemcpyHostToDevice);
     cudaMemcpy(cudaIn, inData, sizeof(float)*width*height, cudaMemcpyHostToDevice);
-    kernel_conv5<<<block, blocks>>>(cudaIn, cudaOut, width, height, cudaFilter);
+    kernel_conv5<<<blocks, block>>>(cudaIn, cudaOut, width, height, cudaFilter);
     cudaMemcpy(inData, cudaOut, sizeof(float)*width*height, cudaMemcpyDeviceToHost);
     cudaFree(cudaIn);
     cudaFree(cudaOut);
     cudaFree(cudaFilter);
     double time = toc();
 
+    cudaError_t cudaError = cudaGetLastError();
+    printf("CudaError:\n%s\n", cudaGetErrorString(cudaError));
+    
     return time;
 }
